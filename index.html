@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>New Web Project</title>
+        <link rel="stylesheet" type="text/css" href="js/jqueryui/css/sunny/jquery-ui-1.8.18.custom.css" />
+    </head>
+    <body>
+        <h1>Chair Map</h1>
+        
+        <div id="chairmap"></div>
+        <div>
+        	<textarea id="jsondata" style="width: 500px; height: 100px;"></textarea>
+        	<button id="getvalue">GetValue</button>
+        	<button id="setvalue">SetValue</button>
+        </div>
+        
+        <script type="text/javascript" src="js/jqueryui/jquery.js"></script>
+        <script type="text/javascript" src="js/jqueryui/jqueryui.js"></script>
+        <script type="text/javascript" src="js/chairmap.js"></script>
+        <script type="text/javascript">
+        	var console = {};
+        	console.log = function() {}; 
+        	
+        	$("#getvalue").click(function() {
+        		// 获取值
+        		var datas = $("#chairmap").cellmap("option", "mapData");
+        		
+        		// 对数据进行处理，添加属性等
+        		$(datas).each(function(i, n) {
+        			$(n).each(function(j, m) {
+        				datas[i][j]= $.extend({
+        					// 这里可以注入其它属性
+        					rows: j,
+        					nums: i
+        				}, m);
+        				
+        			})
+        		})
+        		
+        		$("#jsondata").val(JSON.stringify(datas));
+        	})
+        	
+        	$("#setvalue").click(function() {
+        		var datas = $.parseJSON($("#jsondata").val());
+        		
+        		// 设置值
+        		$("#chairmap").cellmap("option", "mapData", datas);
+        	})
+        </script>
+        <script type="text/javascript">
+        	$("#chairmap").cellmap({
+        		width: 50,
+        		height: 50,
+        		devMode: true,
+        		
+				// About cells
+	    		cellStatus: {
+	    			type: [1,2,3,4,5],
+	    			stat: [0, 1]
+	    		},
+	    		cellDefaultStatus: {
+	    			type: 1,
+	    			stat: 0
+	    		},
+    		
+        		tbwidth: "500px",
+        		tbheight: "500px",
+        		open: function(event, ui) {
+        			var el_tips = $("<div>").attr({
+        				"class": "cell-tips"
+        			}).css({
+        				"border": "1px solid",
+        				"background-color": "#3ff",
+        				"display": "inline"
+        			});
+        			$(this).append(el_tips);
+        		},
+        		/*
+        		 * 这个事件在devMode=false时不会触发, 而是会触发chose方法
+        		 */
+        		devchose: function(event, args) {
+        			alert("I've got: (" + args.x + "," + args.y + ") status=" + args.status().type);
+        			
+        			
+        			// 这里决定cell的状态怎么改变
+        			/* 
+        			 args.status({
+        				stat: 0,
+        				type: 3
+        			})
+        			*/
+        		}, 
+        		cellhover: function(event, args) {
+        			var el_tips = $(this).find(".cell-tips").empty().append("x=" + args.x + ", y=" + args.y);
+        			el_tips.position({
+        				my: "left center",
+        				at: "right center",
+        				of: $(args.el),
+        				collision: "flip"
+        			});
+        		},
+        		/**
+        		 * 这个方法设置不同状态的cell的样式
+        		 */
+        		styleCell: function(el, x, y, status) {
+					var bgColor = "#fff";
+					switch(Number(status.type)) {
+						case 1:
+							bgColor = "#fff";
+							break;
+						case 2:
+							bgColor = "#0f0";
+							break;
+						case 3:
+							bgColor = "#00f";
+							break;
+						case 4:
+							bgColor = "#ff0";
+							break;
+						case 5:
+							bgColor = "#f0f";
+							break;
+					}
+					if(status.stat == 0) {
+						borderColor = "#000";
+					} else {
+						borderColor = "#fff";
+					}
+					// Apply style
+					el.css({
+						"backgroundColor": bgColor,
+						"border": "1px solid " + borderColor
+					});
+
+					return el;
+				}
+        	});
+        </script>
+    </body>
+</html>
